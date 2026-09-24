@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF Signer</title>
+  <meta name="description" content="Add your signature to a PDF in your browser. The PDF never leaves your computer.">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <h1>PDF Signer</h1>
+    <p>Add your signature to a PDF. It all happens in your browser: the PDF never leaves your computer.</p>
+  </header>
+
+  <main id="app" class="app" data-state="empty">
+    <section class="opener" aria-labelledby="open-heading">
+      <h2 id="open-heading" class="visually-hidden">Open a PDF</h2>
+      <label class="drop" id="drop">
+        <input type="file" id="pdf-file" accept="application/pdf,.pdf">
+        <strong>Choose a PDF</strong> or drop one here
+        <span class="hint">Nothing is uploaded; the file is read on your own computer.</span>
+      </label>
+    </section>
+
+    <aside class="panel" aria-labelledby="signatures-heading">
+      <h2 id="signatures-heading">Signatures</h2>
+      <div class="add">
+        <button type="button" class="button" data-open="draw-dialog">Draw</button>
+        <button type="button" class="button" data-open="type-dialog">Type</button>
+        <button type="button" class="button" data-open="image-dialog">Upload image</button>
+      </div>
+      <ul id="signatures" class="signatures" aria-label="Your signatures"></ul>
+      <p id="hint" class="hint">Make a signature, choose it, then click where it goes.</p>
+      <label class="check"><input type="checkbox" id="remember"> Remember my signatures in this browser</label>
+    </aside>
+
+    <section class="document" aria-labelledby="document-name">
+      <div class="toolbar">
+        <div>
+          <h2 id="document-name" class="document-name"></h2>
+          <p id="document-details" class="details"></p>
+        </div>
+        <div class="actions">
+          <label class="button secondary"><input type="file" id="another-file" accept="application/pdf,.pdf" class="visually-hidden">Open another</label>
+          <button type="button" class="button primary" id="download" disabled>Download signed PDF</button>
+        </div>
+      </div>
+      <div id="pages" class="pages"></div>
+    </section>
+  </main>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+
+  <dialog id="draw-dialog" aria-labelledby="draw-heading">
+    <form method="dialog" class="sheet">
+      <h2 id="draw-heading">Draw your signature</h2>
+      <canvas id="pad" class="pad" aria-label="Signature pad: draw with a mouse, pen or finger"></canvas>
+      <div class="row">
+        <fieldset class="inks">
+          <legend class="visually-hidden">Ink colour</legend>
+          <label><input type="radio" name="draw-ink" value="#14213d" checked> Black</label>
+          <label><input type="radio" name="draw-ink" value="#1f3fbf"> Blue</label>
+        </fieldset>
+        <button type="button" class="button secondary" id="pad-undo">Undo</button>
+        <button type="button" class="button secondary" id="pad-clear">Clear</button>
+      </div>
+      <div class="row end">
+        <button value="cancel" class="button secondary">Cancel</button>
+        <button type="button" class="button primary" id="draw-add">Add signature</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="type-dialog" aria-labelledby="type-heading">
+    <form method="dialog" class="sheet">
+      <h2 id="type-heading">Type your signature</h2>
+      <label class="field">Text<input type="text" id="typed-text" autocomplete="name" maxlength="80"></label>
+      <div class="row">
+        <label class="field">Style<select id="typed-style"></select></label>
+        <label class="field">Ink<select id="typed-ink"><option value="#14213d">Black</option><option value="#1f3fbf">Blue</option></select></label>
+        <button type="button" class="button secondary" id="typed-date">Today's date</button>
+      </div>
+      <div class="preview"><canvas id="typed-preview" aria-label="Preview"></canvas></div>
+      <div class="row end">
+        <button value="cancel" class="button secondary">Cancel</button>
+        <button type="button" class="button primary" id="type-add">Add signature</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="image-dialog" aria-labelledby="image-heading">
+    <form method="dialog" class="sheet">
+      <h2 id="image-heading">Upload a picture of your signature</h2>
+      <label class="field">Image<input type="file" id="image-file" accept="image/*"></label>
+      <label class="check"><input type="checkbox" id="image-white" checked> Make white paper transparent</label>
+      <div class="preview"><canvas id="image-preview" aria-label="Preview"></canvas></div>
+      <div class="row end">
+        <button value="cancel" class="button secondary">Cancel</button>
+        <button type="button" class="button primary" id="image-add">Add signature</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="footer">
+    Adds a visible signature; it is not a cryptographic digital signature. The original PDF is kept intact
+    inside the signed copy. <a href="https://github.com/Valgorithms/PDF-Signer">Source and a PHP version</a>,
+    with its <a href="reference/">class reference</a>.
+  </footer>
+</body>
+</html>
