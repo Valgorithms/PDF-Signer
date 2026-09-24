@@ -1,0 +1,54 @@
+name: Publish site
+
+# The site is the browser signer at the root and the PHP class reference under /reference/,
+# built together because publishing to gh-pages replaces the whole branch.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'src/**'
+      - 'phpdoc.dist.xml'
+      - '.github/workflows/pages.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: iconv, mbstring
+          tools: phive
+
+      - name: Install phpDocumentor
+        run: phive install phpDocumentor --trust-gpg-keys 67F861C3D889C656,6DA3ACC4991FFAE5
+
+      - name: Build class reference
+        run: ./tools/phpDocumentor --config phpdoc.dist.xml --no-interaction
+
+      # The signer is plain HTML and modules, so web/ is copied as it is.
+      - name: Add the signer
+        run: cp -r web/. build/
+
+      - name: Publish to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: build
+          clean: true

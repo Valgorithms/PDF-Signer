@@ -1,0 +1,36 @@
+{
+    "name": "vzgcoders/pdf-signer",
+    "description": "Adds signature images on top of the pages of an existing PDF, as an incremental update that keeps the original intact.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "ext-gd": "*",
+        "ext-zlib": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PdfSigner\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PdfSigner\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/sign-pdf"
+    ],
+    "scripts": {
+        "cs": "php-cs-fixer fix",
+        "test": "phpunit",
+        "test-web": "node --test tests/web/*.test.mjs"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

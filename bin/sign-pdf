@@ -1,0 +1,76 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Places a signature image on the pages of a PDF, and prints the signed copy's path.
+//
+// Usage: php bin/sign-pdf <document.pdf> <signature image> --at=PAGE:X:Y:WIDTH [--at=…] [--remove-white] [--output=signed.pdf]
+//
+// Each --at places the signature once: X and Y are its top-left corner in points from the top-left of the
+// page as displayed, and WIDTH its width in points; its height keeps the image's proportions.
+// --remove-white makes a photographed signature's white paper transparent. Without --output, the copy is
+// written beside the document as <name>-signed.pdf.
+
+use PdfSigner\Pdf\PdfException;
+use PdfSigner\SignatureImage;
+use PdfSigner\Signer;
+
+// Composer's autoloader when installed; otherwise the classes load straight from src/.
+require is_file($autoload = __DIR__.'/../vendor/autoload.php') ? $autoload : __DIR__.'/autoload.php';
+
+ini_set('memory_limit', '-1');
+
+$usage = "Usage: php bin/sign-pdf <document.pdf> <signature image> --at=PAGE:X:Y:WIDTH [--at=…] [--remove-white] [--output=signed.pdf]\n";
+$paths = [];
+$placements = [];
+$removeWhite = false;
+$output = null;
+
+foreach (array_slice($argv, 1) as $argument) {
+    if (preg_match('/^--at=(\d+):(-?[\d.]+):(-?[\d.]+):([\d.]+)$/', $argument, $at)) {
+        $placements[] = [(int) $at[1], (float) $at[2], (float) $at[3], (float) $at[4]];
+    } elseif ('--remove-white' === $argument) {
+        $removeWhite = true;
+    } elseif (str_starts_with($argument, '--output=')) {
+        $output = substr($argument, 9);
+    } elseif (str_starts_with($argument, '--')) {
+        fwrite(STDERR, "Unknown option {$argument}.\n{$usage}");
+
+        exit(1);
+    } else {
+        $paths[] = $argument;
+    }
+}
+
+if (2 !== count($paths) || [] === $placements) {
+    fwrite(STDERR, $usage);
+
+    exit(1);
+}
+
+[$documentPath, $imagePath] = $paths;
+$output ??= preg_replace('/\.pdf$/i', '', $documentPath).'-signed.pdf';
+
+try {
+    $signer = Signer::open($documentPath);
+    $image = SignatureImage::fromFile($imagePath);
+
+    if ($removeWhite) {
+        $image = $image->withoutWhiteBackground()->trimmed();
+    }
+
+    foreach ($placements as [$page, $x, $y, $width]) {
+        $signer->stamp($image, $page, $x, $y, $width);
+    }
+
+    if ($signer->hasDigitalSignatures()) {
+        fwrite(STDERR, "Note: this PDF was already digitally signed; viewers will report that it changed after signing.\n");
+    }
+
+    echo $signer->save($output), PHP_EOL;
+} catch (PdfException|\RuntimeException|\InvalidArgumentException|\OutOfRangeException $e) {
+    fwrite(STDERR, $e->getMessage().PHP_EOL);
+
+    exit(1);
+}
