@@ -74,7 +74,7 @@ Signer::open('lease.pdf')
 - `PdfSigner\Pdf\Document` reads just enough of a PDF to revise it. It follows the chain of cross-reference sections, both classic tables and the compressed streams modern writers use, and reads objects packed into object streams. It walks the page tree with the attributes pages inherit. Where an offset is wrong, it finds objects by scanning the file, as PDF viewers do.
 - Each signed page gets a new revision. Its own content is wrapped in `q … Q`, so a transformation it leaves behind can't move the signature. The signature is drawn after it, and the page's resources name the signature image.
 - `PdfSigner\Pdf\IncrementalUpdate` appends the new objects with a cross-reference section of the same kind the file already uses, whose `/Prev` points back to the previous one.
-- `web/` holds the same code in JavaScript, and the two produce byte-identical output for the same input.
+- `web/` holds the same code in JavaScript, and the two produce the same PDF, object for object. Only the compressed image bytes can differ, since browsers and PHP ship different builds of zlib.
 
 ## Tests
 
