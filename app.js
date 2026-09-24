@@ -2,12 +2,14 @@
 import { clampRect, initialSize, placementMatrix, scaleRect, signedFileName } from './geometry.js';
 import { documentOptions, loadPdfJs } from './libraries.js';
 import { EncryptedPdfError, PdfError } from './pdf/objects.js';
-import { SignaturePad } from './signature-pad.js';
+import { capture, SignaturePad } from './signature-pad.js';
 import { STYLES, dataUrl, imageCanvas, signatureFromCanvas, typedCanvas } from './signatures.js';
 import { signatureFromPixels, Signer } from './signer.js';
 
 const STORAGE_KEY = 'pdf-signer.signatures';
 const $ = (id) => document.getElementById(id);
+// On a touch screen, people tap rather than click.
+const tap = matchMedia('(pointer: coarse)').matches ? 'Tap' : 'Click';
 
 const state = {
   name: '',
@@ -30,10 +32,19 @@ const observer = new IntersectionObserver((entries) => {
 
 // ---- Status
 
+let quiet = 0;
+
+/** Shows a message; routine ones fade after a few seconds, while warnings and errors stay until the next. */
 function say(message, kind = 'info') {
   const status = $('status');
   status.textContent = message;
   status.className = `status ${kind === 'info' ? '' : kind}`;
+  clearTimeout(quiet);
+  if (kind === 'info') {
+    quiet = setTimeout(() => {
+      status.textContent = '';
+    }, 8000);
+  }
 }
 
 // ---- Opening a PDF
@@ -76,7 +87,7 @@ async function openPdf(file) {
   if (signer.hasDigitalSignatures()) {
     say('This PDF is already digitally signed. Adding a signature keeps that signature, but viewers will report the document changed after it was signed.', 'warning');
   } else {
-    say(state.signatures.length ? 'Choose a signature, then click where it goes.' : 'Make a signature to place on the document.');
+    say(state.signatures.length ? `Choose a signature, then ${tap.toLowerCase()} where it goes.` : 'Make a signature to place on the document.');
   }
 }
 
@@ -162,7 +173,7 @@ function place(entry, centerX, centerY) {
   drawItem(item);
   arm(null);
   updateDownload();
-  say(`Placed on page ${entry.number}. Drag it to move it, drag its corner to resize it, or press Delete to remove it.`);
+  say(`Placed on page ${entry.number}. Drag it to move it, drag its corner to resize it, or use × to remove it.`);
 }
 
 function drawItem(item) {
@@ -214,7 +225,7 @@ function startDrag(event, item, element, entry, resizing) {
   }
   event.preventDefault();
   element.focus();
-  element.setPointerCapture(event.pointerId);
+  capture(element, event.pointerId);
 
   const bounds = entry.layer.getBoundingClientRect();
   const start = { x: event.clientX, y: event.clientY, item: { ...item } };
@@ -337,8 +348,8 @@ function arm(id) {
   const index = state.signatures.findIndex((s) => s.id === id);
   document.querySelectorAll('.pick')[index]?.setAttribute('aria-pressed', 'true');
   $('hint').textContent = id === null
-    ? 'Choose a signature, then click where it goes.'
-    : state.bytes ? 'Click the page where it goes, or press Enter on a page to place it in the middle. Esc cancels.' : 'Now open a PDF to place it on.';
+    ? `Choose a signature, then ${tap.toLowerCase()} where it goes.`
+    : state.bytes ? `${tap} the page where it goes, or press Enter on a page to place it in the middle. Esc cancels.` : 'Now open a PDF to place it on.';
 }
 
 async function forgetSignature(signature) {

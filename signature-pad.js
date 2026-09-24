@@ -68,8 +68,8 @@ export class SignaturePad {
     if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
-    this.canvas.setPointerCapture(event.pointerId);
-    this.current = { color: this.color, width: this.width * (event.pointerType === 'pen' ? 0.6 + event.pressure : 1), points: [point(event)] };
+    capture(this.canvas, event.pointerId);
+    this.current = { color: this.color, width: this.width * (event.pointerType === 'pen' ? 0.6 + event.pressure : 1), points: [this.point(event)] };
     this.strokes.push(this.current);
     this.schedule();
   }
@@ -78,8 +78,10 @@ export class SignaturePad {
     if (!this.current) {
       return;
     }
-    for (const sample of event.getCoalescedEvents?.() ?? [event]) {
-      this.current.points.push(point(sample));
+    // Coalesced events give the fine detail between frames; where there are none, the event itself counts.
+    const samples = event.getCoalescedEvents?.() ?? [];
+    for (const sample of samples.length ? samples : [event]) {
+      this.current.points.push(this.point(sample));
     }
     this.schedule();
   }
@@ -88,13 +90,23 @@ export class SignaturePad {
     if (this.current) {
       // A quick stroke can end before a move event reaches where it was released.
       const last = this.current.points[this.current.points.length - 1];
-      if (event && (last.x !== event.offsetX || last.y !== event.offsetY)) {
-        this.current.points.push(point(event));
+      const end = event ? this.point(event) : null;
+      if (end && (last.x !== end.x || last.y !== end.y)) {
+        this.current.points.push(end);
         this.schedule();
       }
       this.current = null;
       this.canvas.dispatchEvent(new Event('change'));
     }
+  }
+
+  /**
+   * A pointer's position on the pad, in CSS pixels. Measured from the pad's own box rather than taken
+   * from offsetX, which browsers do not all compute the same way.
+   */
+  point(event) {
+    const box = this.canvas.getBoundingClientRect();
+    return { x: event.clientX - box.left - this.canvas.clientLeft, y: event.clientY - box.top - this.canvas.clientTop };
   }
 
   schedule() {
@@ -119,9 +131,16 @@ export class SignaturePad {
   }
 }
 
-/** A pointer's position on the pad, in CSS pixels. */
-function point(event) {
-  return { x: event.offsetX, y: event.offsetY };
+/**
+ * Keeps a pointer's events coming to an element while it moves off it. Capture can fail when the pointer
+ * is already gone; the stroke is still drawn, just without capture.
+ */
+export function capture(element, pointerId) {
+  try {
+    element.setPointerCapture(pointerId);
+  } catch {
+    // Carry on uncaptured.
+  }
 }
 
 /** Draws strokes as smooth curves through their midpoints, with round ends. */
