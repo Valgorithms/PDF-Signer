@@ -266,6 +266,8 @@ dialog::backdrop { background: rgb(0 0 0 / 0.45); }
   min-width: 0;
 }
 .inks { border: none; margin: 0; padding: 0; display: flex; gap: 12px; }
+/* Undo and Clear wrap as a pair on a narrow screen. */
+.pad-tools { display: flex; gap: 10px; }
 .pad {
   width: 100%;
   height: 220px;
