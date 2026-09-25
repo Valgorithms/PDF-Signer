@@ -1,11 +1,12 @@
-// Adds signature images on top of the pages of an existing PDF, as an incremental update that keeps the
-// original bytes intact. A port of src/Signer.php and src/SignatureImage.php.
+// Adds signature images and marks on top of the pages of an existing PDF, as an incremental update that keeps
+// the original bytes intact. A port of src/Signer.php and src/SignatureImage.php.
 import { deflate } from './pdf/binary.js';
 import { Document } from './pdf/document.js';
 import { IncrementalUpdate } from './pdf/incremental-update.js';
 import { Dictionary, EncryptedPdfError, Name, PdfError, Reference, Stream } from './pdf/objects.js';
 import { number, serialize } from './pdf/serializer.js';
 import { displaySize, displayTransform, placementMatrix, toUser } from './geometry.js';
+import { Mark } from './marks.js';
 
 /**
  * A signature ready to embed: its size, and its RGB and alpha samples compressed with zlib.
@@ -96,6 +97,23 @@ export class Signer {
     return this;
   }
 
+  /**
+   * Draws a mark on a page, filling a rectangle on the page as displayed, in points from its top-left.
+   * A flat rectangle makes a straight line.
+   */
+  mark(mark, page, x, y, width, height) {
+    const found = this.page(page);
+    const transform = displayTransform(found.viewBox(), found.rotation);
+    return this.markWithMatrix(mark, page, placementMatrix((u, v) => toUser(transform, u, v), { x, y, width, height }));
+  }
+
+  /** Draws a mark where a `cm` matrix in the page's user space would draw an image. */
+  markWithMatrix(mark, page, matrix) {
+    this.page(page);
+    this.stamps.push([mark, page, matrix.map(Number)]);
+    return this;
+  }
+
   /** The signed PDF's bytes. */
   async toBytes() {
     if (!this.stamps.length) {
@@ -106,14 +124,14 @@ export class Signer {
     const images = new Map();
     const byPage = new Map();
 
-    for (const [image, page, matrix] of this.stamps) {
-      if (!images.has(image)) {
-        images.set(image, addImage(update, image));
+    for (const [thing, page, matrix] of this.stamps) {
+      if (!(thing instanceof Mark) && !images.has(thing)) {
+        images.set(thing, addImage(update, thing));
       }
       if (!byPage.has(page)) {
         byPage.set(page, []);
       }
-      byPage.get(page).push([images.get(image), matrix]);
+      byPage.get(page).push([thing instanceof Mark ? thing : images.get(thing), matrix]);
     }
 
     // Wrapping each page's content in q … Q means a transform it leaves behind cannot move the signature.
@@ -130,13 +148,24 @@ export class Signer {
       const xObjects = await this.copyDictionary(resources.get('XObject'));
       let content = '';
 
-      for (const [imageReference, matrix] of stamps) {
+      let images = 0;
+
+      // In the order they were placed, so a later one is drawn over an earlier one.
+      for (const [placed, matrix] of stamps) {
+        if (placed instanceof Mark) {
+          content += `${placed.operators(matrix)}\n`;
+          continue;
+        }
         const name = freeName(xObjects);
-        xObjects.set(name, imageReference);
+        xObjects.set(name, placed);
         content += `q ${matrix.map(number).join(' ')} cm ${serialize(new Name(name))} Do Q\n`;
+        images++;
       }
 
-      resources.set('XObject', xObjects);
+      // Marks are drawn with operators alone and need no resources.
+      if (images) {
+        resources.set('XObject', xObjects);
+      }
       const dictionary = page.dictionary.copy();
       dictionary.set('Contents', [save, ...(await this.contents(page)), restore, update.add(new Stream(new Dictionary(), content))]);
       dictionary.set('Resources', resources);

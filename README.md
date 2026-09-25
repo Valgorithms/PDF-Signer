@@ -1,6 +1,6 @@
 # PDF-Signer
 
-Adds your signature on top of the pages of an existing PDF: drawn, typed, or a picture of it.
+Adds your signature on top of the pages of an existing PDF: drawn, typed, or a picture of it. Ticks, crosses, dots, lines, rectangles and ellipses can go on the page too, for filling in a form.
 
 The signed copy is the original PDF with an **incremental update** appended. The original bytes are left exactly as they were, and the signatures are added after them. Forms, links, bookmarks and anything else the PDF held survive untouched, including an earlier digital signature, which stays valid for the revision it signed.
 
@@ -16,7 +16,8 @@ It comes in two forms that produce the same file:
 1. Open the site, and choose or drop a PDF.
 2. Make a signature. You can **Draw** it with a mouse, pen or finger, with an eraser and tools for lines, rectangles and ellipses (hold Shift to keep a line to steps of 45°, or a shape square or round), **Type** it in one of three signature fonts (or a handwriting font your device has, or plain text for dates and initials), or **Upload** a picture of it, with the white paper made transparent.
 3. Choose the signature, then click where it goes on a page. Drag it to move it, drag its corner to resize it, and use × to remove it. With the keyboard, the arrow keys move it, `+` and `-` resize it, and Delete removes it.
-4. Click **Download signed PDF**.
+4. For a form, use **Marks**. Click the page to place a tick, a cross or a dot; the mark stays chosen, so you can tick one box after another until you press Esc. Drag on the page to draw a line, rectangle or ellipse, holding Shift to keep it straight or even. Marks move and resize like signatures, and a line is reshaped by dragging either end. Each mark is drawn in the ink chosen beneath the buttons.
+5. Click **Download signed PDF**.
 
 Signatures are kept in the page until it is closed. Tick **Remember my signatures in this browser** to keep them, stored in this browser only.
 
@@ -47,6 +48,12 @@ php bin/sign-pdf lease.pdf signature.png --at=3:72:640:160
 
 This writes `lease-signed.pdf` beside the document and prints its path. Each `--at=PAGE:X:Y:WIDTH` places the signature once. X and Y are its top-left corner, in points from the top-left of the page as displayed, after any rotation or crop. WIDTH is its width in points; its height keeps the image's proportions. Repeat `--at` to sign several places.
 
+- `--mark=SHAPE:PAGE:X:Y:WIDTH:HEIGHT[:RRGGBB]` draws a mark filling that rectangle: `tick`, `cross`, `dot`, `rectangle`, `ellipse`, or a line from corner to corner, `line-up` (bottom-left to top-right) or `line-down`. A HEIGHT of 0 makes a level line. It is black unless a colour follows. With marks alone, the signature image can be left out:
+
+  ```bash
+  php bin/sign-pdf form.pdf --mark=tick:1:88:412:14:14 --mark=line-down:2:72:300:200:0:b3141c
+  ```
+
 - `--remove-white` makes a photographed signature's white paper transparent and trims it to the ink.
 - `--output=signed.pdf` chooses where the copy goes.
 
@@ -68,13 +75,14 @@ Signer::open('lease.pdf')
 
 - `Signer::pageCount()` and `pageSize($page)` give each page's displayed size in points.
 - `hasDigitalSignatures()` says whether the PDF was already digitally signed.
-- `stampWithMatrix()` takes a transformation matrix in the page's own coordinates, for callers that work those out themselves.
+- `mark(new Mark(Mark::TICK, Mark::rgb('1f3fbf')), page: 1, x: 88, y: 412, width: 14, height: 14)` draws a mark filling a rectangle placed the same way. The shapes are `TICK`, `CROSS`, `DOT`, `RECTANGLE`, `ELLIPSE`, `LINE_UP` and `LINE_DOWN`. A tick or cross grows bolder with its size; every other line is 1.5 points.
+- `stampWithMatrix()` and `markWithMatrix()` take a transformation matrix in the page's own coordinates, for callers that work those out themselves.
 - `open()` and `fromString()` throw a `PdfSigner\Pdf\EncryptedPdfException` for an encrypted PDF, and a `PdfException` for one that can't be read.
 
 ## How it works
 
 - `PdfSigner\Pdf\Document` reads just enough of a PDF to revise it. It follows the chain of cross-reference sections, both classic tables and the compressed streams modern writers use, and reads objects packed into object streams. It walks the page tree with the attributes pages inherit. Where an offset is wrong, it finds objects by scanning the file, as PDF viewers do.
-- Each signed page gets a new revision. Its own content is wrapped in `q … Q`, so a transformation it leaves behind can't move the signature. The signature is drawn after it, and the page's resources name the signature image.
+- Each signed page gets a new revision. Its own content is wrapped in `q … Q`, so a transformation it leaves behind can't move the signature. The signature is drawn after it, and the page's resources name the signature image. Marks are drawn after it too, as vector paths in the order they were placed; they need no resources, and their lines keep the same thickness however a mark is stretched.
 - `PdfSigner\Pdf\IncrementalUpdate` appends the new objects with a cross-reference section of the same kind the file already uses, whose `/Prev` points back to the previous one.
 - `web/` holds the same code in JavaScript, and the two produce the same PDF, object for object. Only the compressed image bytes can differ, since browsers and PHP ship different builds of zlib.
 

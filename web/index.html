@@ -34,6 +34,24 @@
       <ul id="signatures" class="signatures" aria-label="Your signatures"></ul>
       <p id="hint" class="hint">Make a signature, choose it, then place it on the page.</p>
       <label class="check"><input type="checkbox" id="remember"> Remember my signatures in this browser</label>
+
+      <h2 id="marks-heading" class="marks-heading">Marks</h2>
+      <div class="marks" role="group" aria-labelledby="marks-heading">
+        <button type="button" data-mark="tick" aria-pressed="false" title="Tick">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span class="visually-hidden">Tick</span></button>
+        <button type="button" data-mark="cross" aria-pressed="false" title="Cross">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="visually-hidden">Cross</span></button>
+        <button type="button" data-mark="dot" aria-pressed="false" title="Dot">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" class="filled"/></svg><span class="visually-hidden">Dot</span></button>
+        <button type="button" data-mark="line" aria-pressed="false" title="Line">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5"/></svg><span class="visually-hidden">Line</span></button>
+        <button type="button" data-mark="rectangle" aria-pressed="false" title="Rectangle">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12"/></svg><span class="visually-hidden">Rectangle</span></button>
+        <button type="button" data-mark="ellipse" aria-pressed="false" title="Ellipse">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="7"/></svg><span class="visually-hidden">Ellipse</span></button>
+      </div>
+      <label class="field mark-ink">Ink<select id="mark-ink"><option value="#14213d">Black</option><option value="#1f3fbf">Blue</option><option value="#b3141c">Red</option></select></label>
+      <p id="mark-hint" class="hint">Tick or cross a box, or draw a line or shape on the page.</p>
     </aside>
 
     <section class="document" aria-labelledby="document-name">

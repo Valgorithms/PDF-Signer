@@ -39,6 +39,24 @@ final class CommandLineTest extends TestCase
         $this->assertCount(2, Document::open("{$this->directory}/lease-signed.pdf")->pages());
     }
 
+    public function testMarksNeedNoSignatureImage(): void
+    {
+        [$code, $out] = $this->runScript('lease.pdf', '--mark=tick:1:72:100:14:14:b3141c', '--mark=line-up:2:10:10:200:0');
+
+        $this->assertSame(0, $code, $out);
+        $signed = file_get_contents("{$this->directory}/lease-signed.pdf");
+        $this->assertStringContainsString('0.701961 0.078431 0.109804 RG', $signed);
+        $this->assertStringContainsString('0 0 0 RG 1.5 w', $signed, 'black unless a colour is given');
+    }
+
+    public function testAnUnknownMarkIsReported(): void
+    {
+        [$code, $out] = $this->runScript('lease.pdf', '--mark=star:1:0:0:10:10');
+
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString('There is no star mark', $out);
+    }
+
     public function testWithoutAPlacementItShowsHowToUseIt(): void
     {
         [$code, $out] = $this->runScript('lease.pdf', 'signature.png');

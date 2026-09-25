@@ -1,6 +1,6 @@
 {
     "name": "vzgcoders/pdf-signer",
-    "description": "Adds signature images on top of the pages of an existing PDF, as an incremental update that keeps the original intact.",
+    "description": "Adds signature images, and marks such as ticks, crosses and lines, on top of the pages of an existing PDF, as an incremental update that keeps the original intact.",
     "type": "library",
     "license": "MIT",
     "require": {

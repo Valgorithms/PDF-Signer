@@ -16,7 +16,7 @@ use PdfSigner\Pdf\Serializer;
 use PdfSigner\Pdf\Stream;
 
 /**
- * Adds signature images on top of the pages of an existing PDF.
+ * Adds signature images, and marks such as ticks and lines, on top of the pages of an existing PDF.
  *
  * The PDF is revised with an incremental update: its bytes are kept as they are and the signatures are
  * appended, so everything it held survives, including any earlier digital signature as a prior revision.
@@ -31,7 +31,7 @@ use PdfSigner\Pdf\Stream;
  */
 final class Signer
 {
-    /** @var list<array{0: SignatureImage, 1: int, 2: array{float, float, float, float, float, float}}> */
+    /** @var list<array{0: SignatureImage|Mark, 1: int, 2: array{float, float, float, float, float, float}}> */
     private array $stamps = [];
 
     /**
@@ -147,6 +147,48 @@ final class Signer
     }
 
     /**
+     * Draws a mark on a page, such as a tick in a box or a line through a clause.
+     *
+     * The mark fills a rectangle on the page as a viewer shows it, in points from its top-left corner. A line
+     * runs corner to corner, so a rectangle with no height makes a level one.
+     *
+     * @param Mark  $mark   The mark.
+     * @param int   $page   The page number, from 1.
+     * @param float $x      The rectangle's left edge, from the page's left edge.
+     * @param float $y      Its top edge, from the page's top edge.
+     * @param float $width  Its width.
+     * @param float $height Its height.
+     *
+     * @throws \OutOfRangeException There is no such page.
+     */
+    public function mark(Mark $mark, int $page, float $x, float $y, float $width, float $height): self
+    {
+        $found = $this->page($page);
+        $transform = Geometry::displayTransform($found->viewBox(), $found->rotation);
+        $toUser = static fn (float $u, float $v): array => Geometry::toUser($transform, $u, $v);
+
+        return $this->markWithMatrix($mark, $page, Geometry::placementMatrix($toUser, $x, $y, $width, $height));
+    }
+
+    /**
+     * Draws a mark where a transformation matrix in the page's user space would draw an image into the unit
+     * square. {@see Signer::mark()} works this out from a position on the page.
+     *
+     * @param Mark                                            $mark   The mark.
+     * @param int                                             $page   The page number, from 1.
+     * @param array{float, float, float, float, float, float} $matrix The `cm` operator's a b c d e f.
+     *
+     * @throws \OutOfRangeException There is no such page.
+     */
+    public function markWithMatrix(Mark $mark, int $page, array $matrix): self
+    {
+        $this->page($page);
+        $this->stamps[] = [$mark, $page, array_map('floatval', array_values($matrix))];
+
+        return $this;
+    }
+
+    /**
      * The signed PDF: the original bytes followed by an update holding the signatures.
      *
      * @throws PdfException A page cannot be revised.
@@ -161,9 +203,15 @@ final class Signer
         $images = [];
         $byPage = [];
 
-        foreach ($this->stamps as [$image, $page, $matrix]) {
-            $images[spl_object_id($image)] ??= $this->addImage($update, $image);
-            $byPage[$page][] = [$images[spl_object_id($image)], $matrix];
+        foreach ($this->stamps as [$thing, $page, $matrix]) {
+            if ($thing instanceof Mark) {
+                $byPage[$page][] = [$thing, $matrix];
+
+                continue;
+            }
+
+            $images[spl_object_id($thing)] ??= $this->addImage($update, $thing);
+            $byPage[$page][] = [$images[spl_object_id($thing)], $matrix];
         }
 
         // Wrapping each page's content in q … Q means a transform it leaves behind cannot move the signature.
@@ -180,14 +228,26 @@ final class Signer
             $resources = $this->copyDictionary($page->resources);
             $xObjects = $this->copyDictionary($resources->get('XObject'));
             $content = '';
+            $images = 0;
 
-            foreach ($stamps as [$imageReference, $matrix]) {
+            // In the order they were placed, so a later one is drawn over an earlier one.
+            foreach ($stamps as [$placed, $matrix]) {
+                if ($placed instanceof Mark) {
+                    $content .= $placed->operators($matrix)."\n";
+
+                    continue;
+                }
+
                 $name = $this->freeName($xObjects);
-                $xObjects->set($name, $imageReference);
+                $xObjects->set($name, $placed);
                 $content .= 'q '.implode(' ', array_map(Serializer::number(...), $matrix)).' cm '.Serializer::value(new Name($name))." Do Q\n";
+                ++$images;
             }
 
-            $resources->set('XObject', $xObjects);
+            // Marks are drawn with operators alone and need no resources.
+            if ($images > 0) {
+                $resources->set('XObject', $xObjects);
+            }
             $dictionary = new Dictionary($page->dictionary->all());
             $dictionary->set('Contents', [$save, ...$this->contents($page), $restore, $update->add(new Stream(new Dictionary(), $content))]);
             $dictionary->set('Resources', $resources);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PdfSigner\Tests;
 
+use PdfSigner\Mark;
 use PdfSigner\Pdf\Document;
 use PdfSigner\Pdf\EncryptedPdfException;
 use PdfSigner\Pdf\Filters;
@@ -73,6 +74,34 @@ final class SignerTest extends TestCase
         $this->assertInstanceOf(Stream::class, $document->resolve($xObjects->get('PdfSigner2')));
         // On a page turned 90°, the displayed rectangle x 100–300, y 50–130 is user x 86–166, y 136–336.
         $this->assertSame("q 0 200 -80 0 166 136 cm /PdfSigner2 Do Q\n", Filters::decode($document->object($contents[3]->number)));
+    }
+
+    public function testAMarkIsDrawnWithOperatorsAloneAfterWhatWasPlacedBeforeIt(): void
+    {
+        $signed = Signer::fromString(PdfBuilder::twoPages()->classic())
+            ->stamp($this->signature(), 1, 72, 100, 144, 72)
+            ->mark(new Mark(Mark::RECTANGLE), 1, 72, 100, 144, 72)
+            ->toString();
+        $document = Document::fromString($signed);
+        $contents = $document->pages()[0]->dictionary->get('Contents');
+
+        $this->assertSame(
+            "q 144 0 0 72 72 620 cm /PdfSigner1 Do Q\nq 0 0 0 RG 1.5 w 1 J 0 j 72 620 m 216 620 l 216 692 l 72 692 l h S Q\n",
+            Filters::decode($document->object($contents[3]->number)),
+        );
+    }
+
+    public function testAMarkOnARotatedPageLeavesItsResourcesAlone(): void
+    {
+        $original = Document::fromString(PdfBuilder::twoPages()->classic());
+        $signed = Signer::fromString($original->bytes())->mark(new Mark(Mark::LINE_DOWN), 2, 100, 50, 200, 80)->toString();
+        $document = Document::fromString($signed);
+        $page = $document->pages()[1];
+        $contents = $page->dictionary->get('Contents');
+
+        $this->assertEquals($original->pages()[1]->dictionary->get('Resources'), $page->dictionary->get('Resources'), 'no XObject is added for a mark');
+        // The displayed rectangle's top-left and bottom-right are user 86, 136 and 166, 336 on the page turned 90°.
+        $this->assertSame("q 0 0 0 RG 1.5 w 1 J 1 j 86 136 m 166 336 l S Q\n", Filters::decode($document->object($contents[3]->number)));
     }
 
     public function testTheSameSignatureIsEmbeddedOnce(): void

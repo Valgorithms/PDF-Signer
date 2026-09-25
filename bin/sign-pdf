@@ -3,15 +3,19 @@
 
 declare(strict_types=1);
 
-// Places a signature image on the pages of a PDF, and prints the signed copy's path.
+// Places a signature image, and marks such as ticks and lines, on the pages of a PDF, and prints the signed
+// copy's path.
 //
-// Usage: php bin/sign-pdf <document.pdf> <signature image> --at=PAGE:X:Y:WIDTH [--at=…] [--remove-white] [--output=signed.pdf]
+// Usage: php bin/sign-pdf <document.pdf> [<signature image> --at=PAGE:X:Y:WIDTH …] [--mark=SHAPE:PAGE:X:Y:WIDTH:HEIGHT[:RRGGBB] …] [--remove-white] [--output=signed.pdf]
 //
 // Each --at places the signature once: X and Y are its top-left corner in points from the top-left of the
 // page as displayed, and WIDTH its width in points; its height keeps the image's proportions.
+// Each --mark draws a tick, cross, dot, line-up, line-down, rectangle or ellipse filling a rectangle given
+// the same way, in black unless a colour follows; a line runs corner to corner, so HEIGHT 0 makes a level one.
 // --remove-white makes a photographed signature's white paper transparent. Without --output, the copy is
 // written beside the document as <name>-signed.pdf.
 
+use PdfSigner\Mark;
 use PdfSigner\Pdf\PdfException;
 use PdfSigner\SignatureImage;
 use PdfSigner\Signer;
@@ -21,21 +25,25 @@ require is_file($autoload = __DIR__.'/../vendor/autoload.php') ? $autoload : __D
 
 ini_set('memory_limit', '-1');
 
-$usage = "Usage: php bin/sign-pdf <document.pdf> <signature image> --at=PAGE:X:Y:WIDTH [--at=…] [--remove-white] [--output=signed.pdf]\n";
+$usage = "Usage: php bin/sign-pdf <document.pdf> [<signature image> --at=PAGE:X:Y:WIDTH …] [--mark=SHAPE:PAGE:X:Y:WIDTH:HEIGHT[:RRGGBB] …] [--remove-white] [--output=signed.pdf]\n";
+$number = '(-?[\d.]+)';
 $paths = [];
 $placements = [];
+$marks = [];
 $removeWhite = false;
 $output = null;
 
 foreach (array_slice($argv, 1) as $argument) {
-    if (preg_match('/^--at=(\d+):(-?[\d.]+):(-?[\d.]+):([\d.]+)$/', $argument, $at)) {
+    if (preg_match("/^--at=(\\d+):{$number}:{$number}:([\\d.]+)$/", $argument, $at)) {
         $placements[] = [(int) $at[1], (float) $at[2], (float) $at[3], (float) $at[4]];
+    } elseif (preg_match("/^--mark=([a-z-]+):(\\d+):{$number}:{$number}:([\\d.]+):([\\d.]+)(?::(#?[0-9a-fA-F]{6}))?$/", $argument, $at)) {
+        $marks[] = [$at[1], $at[7] ?? '000000', (int) $at[2], (float) $at[3], (float) $at[4], (float) $at[5], (float) $at[6]];
     } elseif ('--remove-white' === $argument) {
         $removeWhite = true;
     } elseif (str_starts_with($argument, '--output=')) {
         $output = substr($argument, 9);
     } elseif (str_starts_with($argument, '--')) {
-        fwrite(STDERR, "Unknown option {$argument}.\n{$usage}");
+        fwrite(STDERR, "Unknown or malformed option {$argument}.\n{$usage}");
 
         exit(1);
     } else {
@@ -43,25 +51,33 @@ foreach (array_slice($argv, 1) as $argument) {
     }
 }
 
-if (2 !== count($paths) || [] === $placements) {
+// A signature image comes with somewhere to put it, and marks need none.
+if ([] === $paths || count($paths) !== ([] === $placements ? 1 : 2) || [] === $placements && [] === $marks) {
     fwrite(STDERR, $usage);
 
     exit(1);
 }
 
-[$documentPath, $imagePath] = $paths;
+$documentPath = $paths[0];
 $output ??= preg_replace('/\.pdf$/i', '', $documentPath).'-signed.pdf';
 
 try {
     $signer = Signer::open($documentPath);
-    $image = SignatureImage::fromFile($imagePath);
 
-    if ($removeWhite) {
-        $image = $image->withoutWhiteBackground()->trimmed();
+    if ([] !== $placements) {
+        $image = SignatureImage::fromFile($paths[1]);
+
+        if ($removeWhite) {
+            $image = $image->withoutWhiteBackground()->trimmed();
+        }
+
+        foreach ($placements as [$page, $x, $y, $width]) {
+            $signer->stamp($image, $page, $x, $y, $width);
+        }
     }
 
-    foreach ($placements as [$page, $x, $y, $width]) {
-        $signer->stamp($image, $page, $x, $y, $width);
+    foreach ($marks as [$shape, $color, $page, $x, $y, $width, $height]) {
+        $signer->mark(new Mark($shape, Mark::rgb($color)), $page, $x, $y, $width, $height);
     }
 
     if ($signer->hasDigitalSignatures()) {
