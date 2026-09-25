@@ -76,6 +76,8 @@ body {
 .drop strong { color: var(--accent); }
 .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .hint { display: block; color: var(--muted); font-size: .875rem; margin: 6px 0 0; }
+.sheet .hint { margin: 0; }
+.sheet .hint:empty { display: none; }
 
 .panel {
   background: var(--surface);

@@ -14,7 +14,7 @@ It comes in two forms that produce the same file:
 ## In the browser
 
 1. Open the site, and choose or drop a PDF.
-2. Make a signature. You can **Draw** it with a mouse, pen or finger, **Type** it in a handwriting font or plain text for dates and initials, or **Upload** a picture of it, with the white paper made transparent.
+2. Make a signature. You can **Draw** it with a mouse, pen or finger, **Type** it in one of three signature fonts (or a handwriting font your device has, or plain text for dates and initials), or **Upload** a picture of it, with the white paper made transparent.
 3. Choose the signature, then click where it goes on a page. Drag it to move it, drag its corner to resize it, and use × to remove it. With the keyboard, the arrow keys move it, `+` and `-` resize it, and Delete removes it.
 4. Click **Download signed PDF**.
 
@@ -23,6 +23,8 @@ Signatures are kept in the page until it is closed. Tick **Remember my signature
 A PDF that is encrypted or password-protected is refused, since adding to it would damage it. For a PDF that is already digitally signed, you're told that viewers will report it changed after it was signed.
 
 The page is plain HTML and JavaScript modules in [`web/`](web), with no build step. Pages are displayed with [pdf.js](https://mozilla.github.io/pdf.js/), loaded from cdnjs and checked against pinned SHA-384 hashes before it runs; the signing itself is this repository's own code.
+
+The signature fonts are served with the page from [`web/fonts/`](web/fonts), so they look the same on every device and typing a signature fetches nothing from anywhere else. They are free fonts under the SIL Open Font License 1.1, whose text sits beside each one: *Mr Dafoe* and *Herr Von Muellerhoff* by Alejandro Paul (Sudtipos), and *Great Vibes* by the Great Vibes Pro Project Authors. They were taken from the [Fontsource](https://fontsource.org) packages, version 5.3.0. The two Sudtipos fonts have Western European letters but not Central European ones such as ą, č, ő or ż. A name that needs one is drawn wholly in Great Vibes instead, and the dialog says so, since a signature that changes font partway through looks wrong.
 
 The [Publish site](.github/workflows/pages.yml) workflow publishes the site to the `gh-pages` branch whenever `web/` or `src/` changes on `main`, and on each release. The signer is the site's root page; the PHP class reference is under `/reference/`. To serve it, set **Settings → Pages → Source** to *Deploy from a branch*, with `gh-pages` and `/ (root)`.
 

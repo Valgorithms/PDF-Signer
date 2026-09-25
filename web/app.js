@@ -3,7 +3,7 @@ import { clampRect, initialSize, placementMatrix, scaleRect, signedFileName } fr
 import { documentOptions, loadPdfJs } from './libraries.js';
 import { EncryptedPdfError, PdfError } from './pdf/objects.js';
 import { capture, SignaturePad } from './signature-pad.js';
-import { STYLES, dataUrl, imageCanvas, signatureFromCanvas, typedCanvas } from './signatures.js';
+import { STYLES, dataUrl, imageCanvas, resolveStyle, signatureFromCanvas, typedCanvas } from './signatures.js';
 import { signatureFromPixels, Signer } from './signer.js';
 
 const STORAGE_KEY = 'pdf-signer.signatures';
@@ -405,6 +405,16 @@ async function recall() {
 
 // ---- Dialogs
 
+/** Says why a typed signature is not drawn quite as chosen, or nothing when it is. */
+function styleNote(chosen, { style, missing }) {
+  if (!missing.length) {
+    return '';
+  }
+  const letters = missing.length > 6 ? `${missing.slice(0, 6).join(' ')} …` : new Intl.ListFormat(undefined, { type: 'disjunction' }).format(missing);
+  const lacks = `${STYLES[chosen].label} has no ${letters}`;
+  return style === chosen ? `${lacks}, so those letters come from another font.` : `${lacks}, so this is ${STYLES[style].label}.`;
+}
+
 function setUpDialogs() {
   for (const button of document.querySelectorAll('[data-open]')) {
     button.addEventListener('click', () => $(button.dataset.open).showModal());
@@ -431,10 +441,19 @@ function setUpDialogs() {
   // Typing
   const style = $('typed-style');
   style.replaceChildren(...Object.entries(STYLES).map(([value, { label }]) => new Option(label, value)));
-  const preview = () => {
-    const text = $('typed-text').value.trim();
+  let previews = 0;
+  const preview = async () => {
+    const text = $('typed-text').value.trim() || 'Your name';
+    const chosen = style.value;
+    const turn = ++previews;
+    const drawn = await resolveStyle(chosen, text);
+    // Typing on while a font loads starts newer previews; only the latest is shown.
+    if (turn !== previews) {
+      return;
+    }
+    $('typed-note').textContent = styleNote(chosen, drawn);
     const target = $('typed-preview');
-    const source = typedCanvas(text || 'Your name', style.value, $('typed-ink').value);
+    const source = typedCanvas(text, drawn.style, $('typed-ink').value);
     target.width = source.width;
     target.height = source.height;
     target.getContext('2d').drawImage(source, 0, 0);
@@ -461,7 +480,8 @@ function setUpDialogs() {
       say('Type something first.', 'error');
       return;
     }
-    await addSignature(await signatureFromCanvas(typedCanvas(text, style.value, $('typed-ink').value)), `“${text}”`);
+    const drawn = await resolveStyle(style.value, text);
+    await addSignature(await signatureFromCanvas(typedCanvas(text, drawn.style, $('typed-ink').value)), `“${text}”`);
     $('type-dialog').close();
   });
 
