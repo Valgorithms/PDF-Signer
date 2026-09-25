@@ -26,6 +26,81 @@ Search.appendIndex(
             "summary": "The\u0020\u0060cm\u0060\u0020matrix\u0020that\u0020draws\u0020an\u0020image\u0020into\u0020a\u0020rectangle\u0020on\u0020the\u0020displayed\u0020page.",
             "url": "classes/PdfSigner-Geometry.html#method_placementMatrix"
         },                {
+            "fqsen": "\\PdfSigner\\Mark",
+            "name": "Mark",
+            "summary": "A\u0020mark\u0020drawn\u0020on\u0020a\u0020page\u0020as\u0020a\u0020vector\u0020path\u003A\u0020a\u0020tick,\u0020a\u0020cross,\u0020a\u0020dot,\u0020a\u0020line,\u0020a\u0020rectangle\u0020or\u0020an\u0020ellipse.\u0020For\nticking\u0020a\u0020box,\u0020striking\u0020something\u0020out\u0020or\u0020drawing\u0020a\u0020box\u0020around\u0020it\u0020on\u0020a\u0020form.",
+            "url": "classes/PdfSigner-Mark.html"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003A__construct\u0028\u0029",
+            "name": "__construct",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#method___construct"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003Argb\u0028\u0029",
+            "name": "rgb",
+            "summary": "A\u0020colour\u0020written\u0020as\u0020six\u0020hexadecimal\u0020digits,\u0020like\u0020\u0060b3141c\u0060\u0020or\u0020\u0060\u0023b3141c\u0060,\u0020as\u0020red,\u0020green\u0020and\u0020blue\u0020from\u00200\u0020to\u00201.",
+            "url": "classes/PdfSigner-Mark.html#method_rgb"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003AstrokeWidth\u0028\u0029",
+            "name": "strokeWidth",
+            "summary": "How\u0020thick\u0020a\u0020mark\u0027s\u0020lines\u0020are,\u0020in\u0020points\u003A\u00201.5,\u0020except\u0020that\u0020a\u0020tick\u0020or\u0020cross\u0020grows\u0020bolder\u0020with\u0020its\u0020size,\u0020at\nan\u0020eighth\u0020of\u0020its\u0020smaller\u0020side.",
+            "url": "classes/PdfSigner-Mark.html#method_strokeWidth"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003Aoperators\u0028\u0029",
+            "name": "operators",
+            "summary": "The\u0020content\u002Dstream\u0020operators\u0020that\u0020draw\u0020the\u0020mark\u0020where\u0020a\u0020\u0060cm\u0060\u0020matrix\u0020would\u0020draw\u0020an\u0020image.",
+            "url": "classes/PdfSigner-Mark.html#method_operators"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003A\u0024shape",
+            "name": "shape",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#property_shape"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ATICK",
+            "name": "TICK",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#constant_TICK"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ACROSS",
+            "name": "CROSS",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#constant_CROSS"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ADOT",
+            "name": "DOT",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#constant_DOT"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ALINE_UP",
+            "name": "LINE_UP",
+            "summary": "A\u0020line\u0020from\u0020the\u0020bottom\u002Dleft\u0020corner\u0020to\u0020the\u0020top\u002Dright.",
+            "url": "classes/PdfSigner-Mark.html#constant_LINE_UP"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ALINE_DOWN",
+            "name": "LINE_DOWN",
+            "summary": "A\u0020line\u0020from\u0020the\u0020top\u002Dleft\u0020corner\u0020to\u0020the\u0020bottom\u002Dright.",
+            "url": "classes/PdfSigner-Mark.html#constant_LINE_DOWN"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003ARECTANGLE",
+            "name": "RECTANGLE",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#constant_RECTANGLE"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003AELLIPSE",
+            "name": "ELLIPSE",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#constant_ELLIPSE"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003AKAPPA",
+            "name": "KAPPA",
+            "summary": "How\u0020far\u0020a\u0020B\u00E9zier\u0020handle\u0020reaches\u0020for\u0020a\u0020quarter\u0020of\u0020a\u0020circle\u0020of\u0020radius\u00201.",
+            "url": "classes/PdfSigner-Mark.html#constant_KAPPA"
+        },                {
+            "fqsen": "\\PdfSigner\\Mark\u003A\u003A\u0024color",
+            "name": "color",
+            "summary": "",
+            "url": "classes/PdfSigner-Mark.html#property_color"
+        },                {
             "fqsen": "\\PdfSigner\\Pdf\\Dictionary",
             "name": "Dictionary",
             "summary": "A\u0020PDF\u0020dictionary\u003A\u0020keys\u0020are\u0020names,\u0020held\u0020without\u0020their\u0020slash,\u0020in\u0020the\u0020order\u0020they\u0020were\u0020read\u0020or\u0020set.",
@@ -673,7 +748,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\PdfSigner\\Signer",
             "name": "Signer",
-            "summary": "Adds\u0020signature\u0020images\u0020on\u0020top\u0020of\u0020the\u0020pages\u0020of\u0020an\u0020existing\u0020PDF.",
+            "summary": "Adds\u0020signature\u0020images,\u0020and\u0020marks\u0020such\u0020as\u0020ticks\u0020and\u0020lines,\u0020on\u0020top\u0020of\u0020the\u0020pages\u0020of\u0020an\u0020existing\u0020PDF.",
             "url": "classes/PdfSigner-Signer.html"
         },                {
             "fqsen": "\\PdfSigner\\Signer\u003A\u003A__construct\u0028\u0029",
@@ -715,6 +790,16 @@ Search.appendIndex(
             "name": "stampWithMatrix",
             "summary": "Places\u0020a\u0020signature\u0020with\u0020a\u0020transformation\u0020matrix\u0020in\u0020the\u0020page\u0027s\u0020user\u0020space,\u0020which\u0020draws\u0020the\u0020image\ninto\u0020the\u0020unit\u0020square.\u0020\u007B\u0040see\u0020Signer\u003A\u003Astamp\u0028\u0029\u007D\u0020works\u0020this\u0020out\u0020from\u0020a\u0020position\u0020on\u0020the\u0020page.",
             "url": "classes/PdfSigner-Signer.html#method_stampWithMatrix"
+        },                {
+            "fqsen": "\\PdfSigner\\Signer\u003A\u003Amark\u0028\u0029",
+            "name": "mark",
+            "summary": "Draws\u0020a\u0020mark\u0020on\u0020a\u0020page,\u0020such\u0020as\u0020a\u0020tick\u0020in\u0020a\u0020box\u0020or\u0020a\u0020line\u0020through\u0020a\u0020clause.",
+            "url": "classes/PdfSigner-Signer.html#method_mark"
+        },                {
+            "fqsen": "\\PdfSigner\\Signer\u003A\u003AmarkWithMatrix\u0028\u0029",
+            "name": "markWithMatrix",
+            "summary": "Draws\u0020a\u0020mark\u0020where\u0020a\u0020transformation\u0020matrix\u0020in\u0020the\u0020page\u0027s\u0020user\u0020space\u0020would\u0020draw\u0020an\u0020image\u0020into\u0020the\u0020unit\nsquare.\u0020\u007B\u0040see\u0020Signer\u003A\u003Amark\u0028\u0029\u007D\u0020works\u0020this\u0020out\u0020from\u0020a\u0020position\u0020on\u0020the\u0020page.",
+            "url": "classes/PdfSigner-Signer.html#method_markWithMatrix"
         },                {
             "fqsen": "\\PdfSigner\\Signer\u003A\u003AtoString\u0028\u0029",
             "name": "toString",
