@@ -14,7 +14,7 @@ It comes in two forms that produce the same file:
 ## In the browser
 
 1. Open the site, and choose or drop a PDF.
-2. Make a signature. You can **Draw** it with a mouse, pen or finger, **Type** it in one of three signature fonts (or a handwriting font your device has, or plain text for dates and initials), or **Upload** a picture of it, with the white paper made transparent.
+2. Make a signature. You can **Draw** it with a mouse, pen or finger, with an eraser and tools for lines, rectangles and ellipses (hold Shift to keep a line to steps of 45°, or a shape square or round), **Type** it in one of three signature fonts (or a handwriting font your device has, or plain text for dates and initials), or **Upload** a picture of it, with the white paper made transparent.
 3. Choose the signature, then click where it goes on a page. Drag it to move it, drag its corner to resize it, and use × to remove it. With the keyboard, the arrow keys move it, `+` and `-` resize it, and Delete removes it.
 4. Click **Download signed PDF**.
 
