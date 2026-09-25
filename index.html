@@ -62,9 +62,12 @@
           <legend class="visually-hidden">Ink colour</legend>
           <label><input type="radio" name="draw-ink" value="#14213d" checked> Black</label>
           <label><input type="radio" name="draw-ink" value="#1f3fbf"> Blue</label>
+          <label><input type="radio" name="draw-ink" value="#b3141c"> Red</label>
         </fieldset>
-        <button type="button" class="button secondary" id="pad-undo">Undo</button>
-        <button type="button" class="button secondary" id="pad-clear">Clear</button>
+        <div class="pad-tools">
+          <button type="button" class="button secondary" id="pad-undo">Undo</button>
+          <button type="button" class="button secondary" id="pad-clear">Clear</button>
+        </div>
       </div>
       <div class="row end">
         <button value="cancel" class="button secondary">Cancel</button>
@@ -79,7 +82,7 @@
       <label class="field">Text<input type="text" id="typed-text" autocomplete="name" maxlength="80"></label>
       <div class="row">
         <label class="field">Style<select id="typed-style"></select></label>
-        <label class="field">Ink<select id="typed-ink"><option value="#14213d">Black</option><option value="#1f3fbf">Blue</option></select></label>
+        <label class="field">Ink<select id="typed-ink"><option value="#14213d">Black</option><option value="#1f3fbf">Blue</option><option value="#b3141c">Red</option></select></label>
         <button type="button" class="button secondary" id="typed-date">Today's date</button>
       </div>
       <div class="preview"><canvas id="typed-preview" aria-label="Preview"></canvas></div>
