@@ -422,7 +422,16 @@ function setUpDialogs() {
 
   // Drawing
   const pad = new SignaturePad($('pad'));
-  $('draw-dialog').addEventListener('close', () => pad.clear());
+  const tools = document.querySelectorAll('[name="draw-tool"]');
+  for (const tool of tools) {
+    tool.addEventListener('change', () => pad.setTool(tool.value));
+  }
+  // Each signature starts with the pen, so reopening the pad never finds it rubbing out.
+  $('draw-dialog').addEventListener('close', () => {
+    pad.clear();
+    tools[0].checked = true;
+    pad.setTool(tools[0].value);
+  });
   for (const ink of document.querySelectorAll('[name="draw-ink"]')) {
     ink.addEventListener('change', () => pad.setColor(ink.value));
   }
@@ -430,11 +439,13 @@ function setUpDialogs() {
   $('pad-clear').addEventListener('click', () => pad.clear());
   $('draw-add').addEventListener('click', async () => {
     const canvas = pad.toCanvas();
-    if (!canvas) {
+    // Ink that was all rubbed out leaves a canvas with nothing on it.
+    const made = canvas && await signatureFromCanvas(canvas);
+    if (!made) {
       say('Draw your signature on the pad first.', 'error');
       return;
     }
-    await addSignature(await signatureFromCanvas(canvas), 'drawn signature');
+    await addSignature(made, 'drawn signature');
     $('draw-dialog').close();
   });
 

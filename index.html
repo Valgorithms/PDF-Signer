@@ -56,6 +56,24 @@
   <dialog id="draw-dialog" aria-labelledby="draw-heading">
     <form method="dialog" class="sheet">
       <h2 id="draw-heading">Draw your signature</h2>
+      <fieldset class="drawing-tools">
+        <legend class="visually-hidden">Tool</legend>
+        <label title="Pen"><input type="radio" name="draw-tool" value="pen" class="visually-hidden" checked><span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c2.5-5 4.5-8.5 6.5-8.5 2.3 0-.8 7.5 1.5 7.5 1.8 0 2.7-4.5 4.5-4.5 1.6 0 .2 4.5 2 4.5 1 0 2-1 3-2"/></svg>
+          <span class="visually-hidden">Pen</span></span></label>
+        <label title="Eraser"><input type="radio" name="draw-tool" value="eraser" class="visually-hidden"><span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4l5 5-10 10H6l-3-3z"/><path d="M9 10l5 5"/><path d="M13 20h8"/></svg>
+          <span class="visually-hidden">Eraser</span></span></label>
+        <label title="Line (hold Shift for steps of 45°)"><input type="radio" name="draw-tool" value="line" class="visually-hidden"><span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5"/></svg>
+          <span class="visually-hidden">Line</span></span></label>
+        <label title="Rectangle (hold Shift for a square)"><input type="radio" name="draw-tool" value="rectangle" class="visually-hidden"><span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12"/></svg>
+          <span class="visually-hidden">Rectangle</span></span></label>
+        <label title="Ellipse (hold Shift for a circle)"><input type="radio" name="draw-tool" value="ellipse" class="visually-hidden"><span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="7"/></svg>
+          <span class="visually-hidden">Ellipse</span></span></label>
+      </fieldset>
       <canvas id="pad" class="pad" aria-label="Signature pad: draw with a mouse, pen or finger"></canvas>
       <div class="row">
         <fieldset class="inks">
